@@ -1,0 +1,14 @@
+{
+  "name": "nse-scrape",
+  "version": "1.0.0",
+  "description": "Minor scraping project to collect some indian securities market data",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Bhargav Saikia",
+  "license": "ISC",
+  "dependencies": {
+    "puppeteer": "^21.6.1"
+  }
+}
