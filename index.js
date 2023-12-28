@@ -1,25 +1,47 @@
 const fs = require("fs");
 const puppeteer = require("puppeteer");
+const path = require("path");
+const readline = require("readline");
+
+let START_YEAR;
+let END_YEAR;
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+rl.question("Enter start year: ", (st) => {
+  rl.question("Enter end year: ", (end) => {
+    START_YEAR = st;
+    END_YEAR = end;
+
+    topCall();
+
+    rl.close();
+  });
+});
 
 async function topCall() {
   const browser = await puppeteer.launch({
     headless: false,
+    args: ["--disable-http2"],
   });
 
   const page = await browser.newPage();
 
+  // console.log(START_YEAR, END_YEAR);
+
   await page.goto(
     "https://www.nseindia.com/reports-indices-historical-index-data"
-    // "https://www.nseindia.com/api/historical/indicesHistory?indexType=NIFTY%2050&from=27-12-2022&to=27-12-2023"
   );
 
-  //   await page.waitForSelector("pre");
-
-  //   await page.$eval("pre",(el)=>{
-  //     console.log(JSON.parse(el.textContent));
-  //   })
-
+  const indexSelectEl = await page.waitForSelector(
+    "#hpReportIndexTypeSearchInput"
+  );
   await page.waitForSelector("#hpReportIndexTypeSearchInput optgroup");
+  const customFilterEl = await page.waitForSelector("li.customFilter a");
+  await customFilterEl.click();
 
   const listOfAllIndices = await page.$$eval("optgroup", (els) => {
     let arr = [];
@@ -33,21 +55,28 @@ async function topCall() {
     return arr;
   });
 
-  
+  const srtDtEl = await page.waitForSelector("input#startDate");
+  const endDtEl = await page.waitForSelector("input#endDate");
+  // const downloadBtnEl = await ;
 
-  console.log(listOfAllIndices[3]);
+  for (let j = 0; j < 1; j++) {
+    const indexName = listOfAllIndices[j];
+    await page.type("#hpReportIndexTypeSearchInput", indexName);
 
-  const indexSelectEl = await page.waitForSelector(
-    "#hpReportIndexTypeSearchInput"
-  );
-  //   listOfAllIndices.forEach(index=>{
+    for (let i = START_YEAR; i <= END_YEAR; i++) {
+      await srtDtEl.evaluate((el, yr) => {
+        el.value = `01-01-${yr}`;
+      }, i);
+      await endDtEl.evaluate(async (el, yr) => {
+        el.value = `30-12-${yr}`;
+      }, i);
 
-  //   })
+      await page.click("#CFanncEquity-download");
+    }
+  }
 
-  await page.$eval("#hpReportIndexTypeSearchInput", (el, indicesList) => {
-    el.value = indicesList[3];
-  }, listOfAllIndices);
-
+  await customFilterEl.dispose();
+  await srtDtEl.dispose();
+  await endDtEl.dispose();
+  await indexSelectEl.dispose();
 }
-
-topCall();
