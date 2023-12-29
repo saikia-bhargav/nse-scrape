@@ -77,14 +77,6 @@ async function topCall() {
 
       await page.click("#CFanncEquity-download");
     }
-
-    // Resetting values
-    await srtDtEl.evaluate((el, yr) => {
-      el.value = `01-01-${yr}`;
-    }, START_YEAR);
-    await endDtEl.evaluate(async (el, yr) => {
-      el.value = `30-12-${yr}`;
-    }, START_YEAR);
   }
 
   await customFilterEl.dispose();
