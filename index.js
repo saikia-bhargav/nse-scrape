@@ -3,6 +3,7 @@ const puppeteer = require("puppeteer");
 const path = require("path");
 const readline = require("readline");
 const asyncIteratorWithDelay = require("./utils.js");
+const { SITE_URL, INDICES_ITERATION_DELAY } = require("./constants.js");
 
 let START_YEAR;
 let END_YEAR;
@@ -33,9 +34,7 @@ async function topCall() {
 
   // console.log(START_YEAR, END_YEAR);
 
-  await page.goto(
-    "https://www.nseindia.com/reports-indices-historical-index-data"
-  );
+  await page.goto(SITE_URL);
 
   const indexSelectEl = await page.waitForSelector(
     "#hpReportIndexTypeSearchInput"
@@ -59,10 +58,13 @@ async function topCall() {
   const srtDtEl = await page.waitForSelector("input#startDate");
   const endDtEl = await page.waitForSelector("input#endDate");
 
-  const indicesIterator = asyncIteratorWithDelay(listOfAllIndices, 5000);
+  const indicesIterator = asyncIteratorWithDelay(
+    [...listOfAllIndices.slice(0,3)],
+    INDICES_ITERATION_DELAY
+  );
 
   for await (const index of indicesIterator) {
-    console.log("current index:", index);
+    console.log("downloading for:", index);
     await page.type("#hpReportIndexTypeSearchInput", index);
 
     for (let i = START_YEAR; i <= END_YEAR; i++) {
@@ -73,8 +75,16 @@ async function topCall() {
         el.value = `30-12-${yr}`;
       }, i);
 
-      //await page.click("#CFanncEquity-download");
+      await page.click("#CFanncEquity-download");
     }
+
+    // Resetting values
+    await srtDtEl.evaluate((el, yr) => {
+      el.value = `01-01-${yr}`;
+    }, START_YEAR);
+    await endDtEl.evaluate(async (el, yr) => {
+      el.value = `30-12-${yr}`;
+    }, START_YEAR);
   }
 
   await customFilterEl.dispose();
