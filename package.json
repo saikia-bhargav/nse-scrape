@@ -4,7 +4,7 @@
   "description": "Minor scraping project to collect some indian securities market data",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index"
   },
   "author": "Bhargav Saikia",
   "license": "ISC",

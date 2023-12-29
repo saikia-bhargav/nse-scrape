@@ -2,6 +2,7 @@ const fs = require("fs");
 const puppeteer = require("puppeteer");
 const path = require("path");
 const readline = require("readline");
+const asyncIteratorWithDelay = require("./utils.js");
 
 let START_YEAR;
 let END_YEAR;
@@ -57,11 +58,12 @@ async function topCall() {
 
   const srtDtEl = await page.waitForSelector("input#startDate");
   const endDtEl = await page.waitForSelector("input#endDate");
-  // const downloadBtnEl = await ;
 
-  for (let j = 0; j < 1; j++) {
-    const indexName = listOfAllIndices[j];
-    await page.type("#hpReportIndexTypeSearchInput", indexName);
+  const indicesIterator = asyncIteratorWithDelay(listOfAllIndices, 5000);
+
+  for await (const index of indicesIterator) {
+    console.log("current index:", index);
+    await page.type("#hpReportIndexTypeSearchInput", index);
 
     for (let i = START_YEAR; i <= END_YEAR; i++) {
       await srtDtEl.evaluate((el, yr) => {
@@ -71,7 +73,7 @@ async function topCall() {
         el.value = `30-12-${yr}`;
       }, i);
 
-      await page.click("#CFanncEquity-download");
+      //await page.click("#CFanncEquity-download");
     }
   }
 
